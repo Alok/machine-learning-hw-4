@@ -49,11 +49,30 @@ def center_data(mat, row_major = True):
     :returns: TODO
 
     """
+    x_bar = mean_of_vecs(mat)
+
+    # [] TODO: subtract each row from mean
     if row_major:
-        # get mean, subtract
 
 
 
 # ii) Transform the features using Xij := log(Xij +0.1), where the Xij’s are the entries of the design matrix.
 # iii) Binarize the features using Xij := I(Xij > 0). I denotes an indicator variable.
+def binarize_matrix(mat):
+    """TODO: Docstring for binarize_matrix.
 
+    :mat: TODO
+    :returns: TODO
+
+    """
+    def binarize_list(lst):
+        """TODO: Docstring for binarize_list.
+
+        :lst: TODO
+        :returns: TODO
+
+        """
+        f = lambda x: 1 if x > 0 else 0
+        return [f(i) for i in lst]
+
+    return [binarize_list(lst) for lst in mat]
