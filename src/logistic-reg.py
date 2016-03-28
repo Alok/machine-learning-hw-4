@@ -41,7 +41,7 @@ def mean_of_vecs(mat):
 
     return = [mean(mat, j) for j in range(len(mat))]
 
-def center_data(mat, row_major = True):
+def center_data(mat):
     """
     TODO: Docstring for center_data
 
@@ -52,27 +52,21 @@ def center_data(mat, row_major = True):
     x_bar = mean_of_vecs(mat)
 
     # [] TODO: subtract each row from mean
-    if row_major:
+
+def log_transform_matrix(mat):
+    def log_transform_list(lst):
+        assert all(x > -.1 for x in lst)
+        f = lambda x: math.log( x + 0.1)
+        return [f(i) for i in lst]
+
+    return np.array([log_transform_list(lst) for lst in mat])
 
 
 
 # ii) Transform the features using Xij := log(Xij +0.1), where the Xij’s are the entries of the design matrix.
-# iii) Binarize the features using Xij := I(Xij > 0). I denotes an indicator variable.
 def binarize_matrix(mat):
-    """TODO: Docstring for binarize_matrix.
-
-    :mat: TODO
-    :returns: TODO
-
-    """
     def binarize_list(lst):
-        """TODO: Docstring for binarize_list.
-
-        :lst: TODO
-        :returns: TODO
-
-        """
         f = lambda x: 1 if x > 0 else 0
         return [f(i) for i in lst]
 
-    return [binarize_list(lst) for lst in mat]
+    return np.array([binarize_list(lst) for lst in mat])
