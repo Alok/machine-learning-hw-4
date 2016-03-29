@@ -24,11 +24,11 @@ y_validate = housing_data['Yvalidate']
 
 def ridge_regression_model(X = x_train, y = y_train, epsilon = .001):
     """
-    TODO: Returns a set of weights for a ridge regression model.
+    Returns a set of weights for a ridge regression model.
 
     :X: (n,m) design matrix
     :y: (n,1) labels
-    :epsilon: hyperparameter
+    :epsilon: learning rate
     :returns: a (m,1) vector of weights
 
     """
@@ -47,31 +47,23 @@ def ridge_regression_model(X = x_train, y = y_train, epsilon = .001):
 # [] TODO make fn that returns a validation set and training sets for k-fold
 # cross validation
 
-def k_fold(k=10, sample_size = 10000, data = x_train, labels = y_train, fold_num = 0):
+def k_fold(k=10, sample_size = 10000, data, fold_num = 0):
     """
-    TODO: implement k-fold cross validation
+    k-fold cross validation.
 
-    :x: TODO
-    :returns: ((set of {left + right}, current), (y {left right}, y current))
+    :returns: (current fold , set of {left + right})
 
     """
     s = sample_size // k
     i = fold_num
 
-    left_x     = data[:i * s ]
-    current_x  = data[i * s : (i+1) * s]
-    right_x    = data[(i+1) * s:]
+    left     = data[:i * s ]
+    current  = data[i * s : (i+1) * s]
+    right    = data[(i+1) * s:]
 
-    left_y    = labels[ : i * s ]
-    current_y = labels[i * s : (i+1) * s]
-    right_y   = labels[(i+1) * s :]
+    rest = np.concatenate((left, right))
 
-    x = np.concatenate((left_x, right_x))
-    y = np.concatenate((left_y, right_y))
-
-        return ((x, current_x), (y, current_y))
-
-        # y = np.concatenate((left_y, right_y)).ravel()
+    return (current, rest)
 
 # TODO train on each cross validation set and find lowest error rate with diff hyperparams
 
@@ -83,4 +75,7 @@ for param in hyperparam_vals:
     for n in range(folds):
         x_cross = k_fold(k = folds, fold_num = n)[0][0]
         y_cross = k_fold(k = folds, fold_num = n)[1][0]
+        y_valid = k_fold(k = folds, fold_num = n)[0][1]
+        y_valid = k_fold(k = folds, fold_num = n)[1][1]
     w = ridge_regression_model
+    y_pred = np.transpose(w) * x_cross
