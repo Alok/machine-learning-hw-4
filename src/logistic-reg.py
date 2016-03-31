@@ -22,7 +22,7 @@ test = data['test_data']
 
 # i) Standardize each column to have mean 0 and unit variance.
 
-# X_scaled = normalize(train)
+X_scaled = normalize(train)
 
 def log_transform_matrix(mat):
     def log_transform_list(lst):
@@ -55,7 +55,10 @@ def logistic_grad_fn(x, w, y):
 # def stochastic_logistic_grad_fn():
 
 
-def grad_des(precision = .001, epsilon = .1, iterations = 1000, while_precision = False): # TODO grad fn
+def grad_des(x, epsilon = .1, iterations = 1000) : # TODO grad fn
+    """
+    :: array -> Int -> Int -> weight
+    """
 
     x_old = 
     # x_new = # TODO init a vector of all 1s here so it is of the same dim as the grad
@@ -77,13 +80,21 @@ def grad_des(precision = .001, epsilon = .1, iterations = 1000, while_precision 
             x_new = x_old - epsilon * grad_fn(x_old)
         return x_new
 
+def test_grad_desc(x=train, epsilon = .1, iteration=1000, y=labels):
+    
 
 
-def stochastic_grad_des(precision = .001, x_old = 0, J, epsilon = .1):
+def stochastic_grad_des(epsilon = .1, iterations = 1000) : # TODO grad fn
+w_init = 
     # Choose an initial vector of parameters w and learning rate \eta.
     # Repeat until an approximate minimum is obtained:
     # Randomly shuffle examples in the training set.
         # For \! i in 1..n:
             # \! w = w - epsilon * grad Q_i(w).
 
+
+def plot_grad_desc(iterations, risk):
+    """
+    generate a single point to be plotted
+    """
 

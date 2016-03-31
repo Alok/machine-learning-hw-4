@@ -13,16 +13,12 @@ from sklearn.metrics import confusion_matrix
 from numpy.linalg import norm
 from numpy import array as arr
 
-# residual sum of squares error
-def rss(pred_labels, true_labels):
-    errors = pred_labels - true_labels
-    err_sq = errors**2
-    return sum(err_sq)
+# ============= CONSTANTS =============
 
-# [] TODO add bias term by appending 1 to beginning of every feature and to the
-# list of labels
+hyperparam_vals = [1e-10, 1.5e-7, 1e-5, 1e-3, 1e-1, 1e0, 1e1, 1e2, 1e3, 1e4]
 
-housing_data = sio.loadmat('../housing_dataset/housing_data.mat')
+# Must be run from top of project
+housing_data = sio.loadmat('./housing_dataset/housing_data.mat')
 
 x_train    = housing_data['Xtrain']
 y_train    = housing_data['Ytrain']
@@ -30,20 +26,35 @@ y_train    = housing_data['Ytrain']
 x_validate = housing_data['Xvalidate']
 y_validate = housing_data['Yvalidate']
 
+# ============= FUNCTIONS =============
 
-# [] TODO: Normalize x and y
+# residual sum of squares error
+def rss(pred_labels, true_labels):
+    errors = pred_labels - true_labels
+    err_sq = errors**2
+    return sum(err_sq)
+
+def add_bias(vec, bias_term = 1):
+    return np.insert(vec, [len(vec[0])], [[bias_term] for i in range(len(vec))], axis = 1)
+
+def center(mat):
+    """
+    Centers each vector in a matrix without rescaling their lengths.
+    """
+    return normalize(mat, with_mean = False)
+
+# [] TODO: Normalize x
 # [] TODO: get RSS of diff vector
 
-
-
+# ============= RIDGE REGRESSION =============
 def ridge_regression_model(X = x_train, y = y_train, epsilon = .001):
     """
     Returns a set of weights for a ridge regression model.
 
-    :X: (n,m) design matrix
-    :y: (n,1) labels
+    :X: (n, m) design matrix
+    :y: (n, 1) labels
     :epsilon: learning rate
-    :returns: a (m,1) vector of weights
+    :returns: a (m, 1) vector of weights
 
     """
 
@@ -59,18 +70,22 @@ def ridge_regression_model(X = x_train, y = y_train, epsilon = .001):
 
     return C
 
-x = normalize(x_train)
-y = normalize(y_train)
+# x = x_train
+# y = y_train
 
-for i in [1e-5,1e-3,1e-2,1e-1,1e0,1e1,1e2,1e3,1e4]:
-    w = ridge_regression_model(x, y, i)
-    xw = np.dot(x, w)
-    diff = xw - y
-    print("i: {}, norm: {}".format(i, norm(diff)))
+x = normalize(x_train, with_mean = False)
+y = normalize(y_train, with_mean = False)
 
+def test_params(data, labels, param_list = hyperparam_vals):
+    x = data
+    y = labels
 
-# [] TODO make fn that returns a validation set and training sets for k-fold
-# cross validation
+    for epsilon in param_list:
+        w = ridge_regression_model(x, y, epsilon)
+        xw = np.dot(x, w)
+        diff = xw - y
+        print("epsilon: {}, norm: {}".format(epsilon, norm(diff)))
+
 
 def k_fold(data, k = 10, fold_num = 0):
     """
@@ -86,26 +101,24 @@ def k_fold(data, k = 10, fold_num = 0):
     current  = data[i * s : (i+1) * s]
     right    = data[(i+1) * s:]
 
-    rest = np.concatenate((left, right))
+    validation_set = current
 
-    return (current, rest)
+    training_set = np.concatenate((left, right))
+
+    return (validation_set, training_set)
 
 # TODO train on each cross validation set and find lowest error rate with diff hyperparams
 
-hyperparam_vals = [1e-10,1.5e-7,1e-5,1e-3,1e-1,1e0,1e1,1e2,1e3,1e4]
+def test_k_fold(param_list = hyperparam_vals, data = x_train, labels = y_train, folds = 10):
 
-folds = 10
+    for param in hyperparam_vals:
+        for n in range(folds):
+            x_valid = k_fold( data = x_train , fold_num = n, k = folds )[0]
+            x_cross = k_fold( data = x_train , fold_num = n, k = folds )[1]
 
-# [] TODO: wrap the for loop in a function
+            y_valid = k_fold( data = y_train , fold_num = n, k = folds )[0]
+            y_cross = k_fold( data = y_train , fold_num = n, k = folds )[1]
 
-for param in hyperparam_vals:
-    for n in range(folds):
-        x_valid = k_fold( data = x_train , fold_num = n, k = folds )[0]
-        x_cross = k_fold( data = x_train , fold_num = n, k = folds )[1]
-
-        y_valid = k_fold( data = y_train , fold_num = n, k = folds )[0]
-        y_cross = k_fold( data = y_train , fold_num = n, k = folds )[1]
-
-    w = ridge_regression_model()
-    y_pred = np.dot(x_cross, w)
-    # print (w, y_pred)
+            w = ridge_regression_model()
+            y_pred = np.dot(x_cross, w)
+            print (w, y_pred)
