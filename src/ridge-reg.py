@@ -60,7 +60,7 @@ def ridge_regression_model(X = x_train, y = y_train, epsilon = .001):
 
     # get number of columns for the num of rows of 'w'
     N = X.shape[1]
-    X_t = np.transpose(X)
+    X_t = X.T
 
     I = np.identity(N)
 
@@ -108,7 +108,7 @@ def k_fold(data, k = 10, fold_num = 0):
     return (validation_set, training_set)
 
 # TODO train on each cross validation set and find lowest error rate with diff hyperparams
-
+# TODO plot the value of each coefficient against the index of the coefficient
 def test_k_fold(param_list = hyperparam_vals, data = x_train, labels = y_train, folds = 10):
 
     for param in hyperparam_vals:

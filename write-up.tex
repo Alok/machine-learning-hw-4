@@ -1,3 +1,4 @@
+\documentclass[11pt, parindent=0]{article}
 \usepackage{mathrsfs,listings,hyperref,backref,amsmath,amsfonts,textcomp,amssymb,geometry,graphicx,enumerate,algorithm,algorithmicx,pdfsync}
 \usepackage[noend]{algpseudocode}
 \usepackage[T1]{fontenc}
@@ -35,26 +36,69 @@
 \section{1}
 \label{sec:1}
 
-\section{2}
-\label{sec:2}
-
-\section{3}
-\label{sec:3}
-
+% \section{2}
+% \label{sec:2}
+%
+% \section{3}
+% \label{sec:3}
+%
 \section{4}
 \label{sec:4}
 
 \begin{enumerate}[(a)]
     \item If we note that $\tanh = \frac{\sinh}{\cosh}$, then using the definitions of $\sinh$ and $\cosh$ gives us the desired statement, as the factor of $\frac{1}{2}$ in $\sinh$ and $\cosh$ disappears.
 
-    \item $g'$ is just $\frac{\tanh\'}{2}$ as factor of a half vanishes after differentiating. Using the analogue of the $\tan^2+\sec^2=1$ for hyperbolic functions, we get that the derivative is $\frac{1-\tanh^2}{2}$
+    \item $g'$ is just $\frac{\tanh'}{2}$ as the factor of a half vanishes after differentiating. Using the analogue of the $\tan^2+\sec^2=1$ for hyperbolic functions, we get that the derivative is $ \frac{1-\tanh^2}{2} $.
 
-    \item 
+    \item We find the gradient of $J(\textbf{w})$ in terms of $\textbf{w}$. It turns out to be (with no attempt at simplification):
+
+        $ \sum\limits_{i=1}^{n}
+        (y_i \cdot
+        \frac
+        {1}
+        {g(
+            \textbf{X}_i \cdot \textbf{w}
+    )}
+    \cdot \textbf{X}_i)
+        -
+        ((1-y_i) \cdot \frac{1}{1-g(\textbf{X}_i \cdot \textbf{w})} \cdot g'(\textbf{X}_i \cdot \textbf{w}) \cdot \textbf{X}_i )
+        $
+
+        The update equation becomes
+        $ w \leftarrow \textbf{w} - \epsilon\nabla_wJ = \textbf{w} -\sum\limits_{i=1}^{n}
+        (y_i \cdot
+        \frac
+        {1}
+        {g(
+            % \textbf{X_i \cdot w}
+        \textbf{X}_i \cdot \textbf{w}
+        )}
+    \cdot \textbf{X}_i)
+    -
+    ((1-y_i) \cdot \frac{1}{1-g(\textbf{X}_i \cdot \textbf{w})} \cdot g'(\textbf{X}_i \cdot \textbf{w}) \cdot \textbf{X}_i )
+        $
 \end{enumerate}
 
 \section{5}
 \label{sec:5}
 
+Here are some potential reasons why the linear SVM is not utilizing the new feature well:
+\begin{enumerate}[1.]
+    \item The data might be high dimensional enough that a quadratic kernel is not enough to sufficiently lift the data.
+
+    \item The STM might also be overfitting on the new features and therefore will do poorly on the entire set of data, but might do very well on just the data near midnight.
+
+\end{enumerate}
+
+
+Some ways to improve the performance of the SVM are:
+\begin{enumerate}[1.]
+    \item Play around with its margins by changing the `C' parameter (assuming we're using a soft margin).
+
+    \item Finding the most important components of the data by projecting into a lower dimensional space via the singular value decomposition and using just those to lower the dimensionality.
+
+    \item Just playing around with adding or removing features and cross validating.
+\end{enumerate}
 
 
 \end{document}

@@ -8,4 +8,5 @@
 * pick hyperparameters
 * plot regression coefficients w (how to do this if they're in 8 dim)? should
   this be the RSS vs hyperparameter (is the spec a typo)?
+* how to pick a small enough epsilon?
 

@@ -52,12 +52,14 @@ def logistic_grad_fn(w, x = train, y= labels[0]):
     ans = np.sum([(y[i] - s( dot(x[i], w) )[0]) * x[i].reshape(len(x[i]),1) for i in range(len(x))], axis = 0)
     return ans
 
+# TODO should it be range len x[0] or y[0]
+
 def grad_des(epsilon = .001, iterations = 1000) :
     w_new = np.array([ [1] for i in range(len(train[0]))])
     assert iterations > 0
     for _ in range(iterations):
         w_old = w_new
-        w_new = w_old - epsilon * logistic_grad_fn(w_old, train, labels[0]) # grad_fn(w_old)
+        w_new = w_old - epsilon * logistic_grad_fn(train, w_old, labels) # grad_fn(w_old)
     return w_new
 
 
@@ -79,4 +81,9 @@ def grad_des(epsilon = .001, iterations = 1000) :
 # def decreasing_learning_rate(x):
 
 def R(w, x= train, y = labels[0]):
-    return sum([ (y[i] * ln(s(dot(w.T, x[i])))) + ( (1 - y[i]) * ln(1 - s(dot(w.T,x[i]))) ) for i in range(len(x)) ])
+    s = scipy.special.expit
+    print ([ln(1 - s( dot(x[i],w)[0])) for i in range(len(x))])
+    return ([(1- y[i]) * ln(1 - s( dot(x[i],w)[0])) for i in range(len(x))])
+
+    # return (-sum([ (y[i] * ln(s(dot(x[i],w)[0]))) + ( (1 - y[i]) * ln(1 - s(dot(x[i], w)[0])) )
+                   # for i in range(len(x)) ]))
