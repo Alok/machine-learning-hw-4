@@ -8,10 +8,13 @@ import scipy
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.io as sio
+
+from numpy import dot
 from sklearn import svm
 from sklearn.preprocessing import scale as normalize
 from sklearn.utils import shuffle
 from sklearn.metrics import confusion_matrix
+
 
 # Must be run from top of project
 data = sio.loadmat('./spam_dataset/spam_data.mat')
@@ -43,21 +46,17 @@ def binarize_matrix(mat):
     return np.array([binarize_list(lst) for lst in mat])
 
 def logistic_grad_fn(x, w, y):
-    """
-    x: (n,d)
-    w: (d,1)
-    y: (n,1)
-    """
-    xw = np.dot(x, w)
-    s = scipy.special.expit(xw)
-    a = y - s
-    print("x.shape: {}".format(x.shape))
-    print("y.shape: {}".format(y.shape))
-    print("xw.shape: {}".format(xw.shape))
-    print("s.shape: {}".format(s.shape))
-    return np.dot( (y - s), x)
+    s = scipy.special.expit
+    # ans = np.sum([(y[i] - s( dot(x[i], w) )) * x[i].reshape(len(x[i]),1) for i in range(len(x[0]))], axis = 0)
+    ans = np.sum([(y[i] - s( dot(x[i], w) )) * x[i] for i in range(len(x[0]))], axis = 0)
+    return ans
 
 
+"""
+x: (n,d)
+w: (d,1)
+y: (n,1)
+"""
 
 def grad_des(epsilon = .1, iterations = 1000) : # TODO grad fn
     """
@@ -65,6 +64,7 @@ def grad_des(epsilon = .1, iterations = 1000) : # TODO grad fn
     """
 
     w_new = np.array([ [1] for i in range(len(train[0]))])
+    print("old: {}".format(w_new.shape))
 
     # x_new = # TODO init a vector of all 1s here so it is of the same dim as the grad
     # TODO XXX randomly init x_new at one of the data points
@@ -72,12 +72,13 @@ def grad_des(epsilon = .1, iterations = 1000) : # TODO grad fn
     # [] TODO: find function to calculate gradient from sympy
     # [] TODO: manually plug n logistic gradient here
 
-    if iterations > 0:
-        for _ in range(iterations):
-            w_old = w_new
-            print (w_old.shape)
-            w_new = w_old - epsilon * logistic_grad_fn(train, w_old, labels) # grad_fn(w_old)
-        return w_new
+    assert iterations > 0
+
+    for _ in range(iterations):
+        w_old = w_new
+        w_new = w_old - epsilon * logistic_grad_fn(train, w_old, labels) # grad_fn(w_old)
+    print("new: {}".format(w_new.shape))
+    return w_new
 
 
 def test_grad_desc(x=train, epsilon = .1, iteration=1000, y=labels):
