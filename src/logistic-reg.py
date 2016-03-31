@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.io as sio
 
+from math import log as ln
 from numpy import dot
 from sklearn import svm
 from sklearn.preprocessing import scale as normalize
@@ -45,46 +46,24 @@ def binarize_matrix(mat):
 
     return np.array([binarize_list(lst) for lst in mat])
 
-def logistic_grad_fn(x, w, y):
+def logistic_grad_fn(w, x = train, y= labels[0]):
     s = scipy.special.expit
     # ans = np.sum([(y[i] - s( dot(x[i], w) )) * x[i].reshape(len(x[i]),1) for i in range(len(x[0]))], axis = 0)
-    ans = np.sum([(y[i] - s( dot(x[i], w) )) * x[i] for i in range(len(x[0]))], axis = 0)
+    ans = np.sum([(y[i] - s( dot(x[i], w) )[0]) * x[i].reshape(len(x[i]),1) for i in range(len(x))], axis = 0)
     return ans
 
-
-"""
-x: (n,d)
-w: (d,1)
-y: (n,1)
-"""
-
-def grad_des(epsilon = .1, iterations = 1000) : # TODO grad fn
-    """
-    :: array -> Int -> Int -> weight
-    """
-
+def grad_des(epsilon = .001, iterations = 1000) :
     w_new = np.array([ [1] for i in range(len(train[0]))])
-    print("old: {}".format(w_new.shape))
-
-    # x_new = # TODO init a vector of all 1s here so it is of the same dim as the grad
-    # TODO XXX randomly init x_new at one of the data points
-
-    # [] TODO: find function to calculate gradient from sympy
-    # [] TODO: manually plug n logistic gradient here
-
     assert iterations > 0
-
     for _ in range(iterations):
         w_old = w_new
-        w_new = w_old - epsilon * logistic_grad_fn(train, w_old, labels) # grad_fn(w_old)
-    print("new: {}".format(w_new.shape))
+        w_new = w_old - epsilon * logistic_grad_fn(w_old, train, labels[0]) # grad_fn(w_old)
     return w_new
 
 
-def test_grad_desc(x=train, epsilon = .1, iteration=1000, y=labels):
-
-def stochastic_grad_des(epsilon = .1, iterations = 1000) : # TODO grad fn
-w_init =
+# def test_grad_desc(x=train, epsilon = .1, iteration=1000, y=labels):
+#
+# def stochastic_grad_des(epsilon = .1, iterations = 1000) : # TODO grad fn
     # Choose an initial vector of parameters w and learning rate \eta.
     # Repeat until an approximate minimum is obtained:
     # Randomly shuffle examples in the training set.
@@ -92,10 +71,12 @@ w_init =
             # \! w = w - epsilon * grad Q_i(w).
 
 
-def plot_grad_desc(iterations, risk):
-    """
-    generate a single point to be plotted
-    """
+# def plot_grad_desc(iterations, risk):
+#     """
+#     generate a single point to be plotted
+#     """
 
-def decreasing_learning_rate(x):
+# def decreasing_learning_rate(x):
 
+def R(w, x= train, y = labels[0]):
+    return sum([ (y[i] * ln(s(dot(w.T, x[i])))) + ( (1 - y[i]) * ln(1 - s(dot(w.T,x[i]))) ) for i in range(len(x)) ])
