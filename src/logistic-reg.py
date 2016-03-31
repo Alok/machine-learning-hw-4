@@ -16,13 +16,14 @@ from sklearn.metrics import confusion_matrix
 # Must be run from top of project
 data = sio.loadmat('./spam_dataset/spam_data.mat')
 train = data['training_data']
+train = normalize(train)
+
 labels = data['training_labels']
 
 test = data['test_data']
 
 # i) Standardize each column to have mean 0 and unit variance.
 
-X_scaled = normalize(train)
 
 def log_transform_matrix(mat):
     def log_transform_list(lst):
@@ -50,42 +51,39 @@ def logistic_grad_fn(x, w, y):
     xw = np.dot(x, w)
     s = scipy.special.expit(xw)
     a = y - s
+    print("x.shape: {}".format(x.shape))
+    print("y.shape: {}".format(y.shape))
+    print("xw.shape: {}".format(xw.shape))
+    print("s.shape: {}".format(s.shape))
     return np.dot( (y - s), x)
 
-# def stochastic_logistic_grad_fn():
 
 
-def grad_des(x, epsilon = .1, iterations = 1000) : # TODO grad fn
+def grad_des(epsilon = .1, iterations = 1000) : # TODO grad fn
     """
     :: array -> Int -> Int -> weight
     """
 
-    x_old = 
+    w_new = np.array([ [1] for i in range(len(train[0]))])
+
     # x_new = # TODO init a vector of all 1s here so it is of the same dim as the grad
     # TODO XXX randomly init x_new at one of the data points
 
     # [] TODO: find function to calculate gradient from sympy
     # [] TODO: manually plug n logistic gradient here
-    grad = 0
+
     if iterations > 0:
         for _ in range(iterations):
-            x_old = x_new
-            x_new = x_old - epsilon * grad_fn(x_old)
-        return x_new
+            w_old = w_new
+            print (w_old.shape)
+            w_new = w_old - epsilon * logistic_grad_fn(train, w_old, labels) # grad_fn(w_old)
+        return w_new
 
-
-    elif while_precision:
-        while abs(x_new - x_old) > precision:
-            x_old = x_new
-            x_new = x_old - epsilon * grad_fn(x_old)
-        return x_new
 
 def test_grad_desc(x=train, epsilon = .1, iteration=1000, y=labels):
-    
-
 
 def stochastic_grad_des(epsilon = .1, iterations = 1000) : # TODO grad fn
-w_init = 
+w_init =
     # Choose an initial vector of parameters w and learning rate \eta.
     # Repeat until an approximate minimum is obtained:
     # Randomly shuffle examples in the training set.
@@ -97,4 +95,6 @@ def plot_grad_desc(iterations, risk):
     """
     generate a single point to be plotted
     """
+
+def decreasing_learning_rate(x):
 
