@@ -55,7 +55,14 @@ def logistic_grad_fn(w, x = train, y = labels[0]):
                   for i in range(len(x))], axis = 0)
     return ans
 
-def grad_des(epsilon = .0001, iterations = 100, dec_epsilon = False, x = train, y = labels[0]):
+
+def stochastic_grad_fn(w, x = train, y = labels[0]):
+    # def logistic_grad_fn(w, x = train, y= labels[0]):
+    i = randrange(len(x))
+    ans = ((y[i] - s( dot(x[i], w) )[0]) * x[i].reshape(len(x[i]),1))
+    return ans
+
+def grad_des(epsilon = .0001, iterations = 100, dec_epsilon = False, x = train, y = labels[0], display = []):
     w_new = np.array([ [1] for i in range(len(x[0]))])
     assert iterations > 0
 
@@ -65,21 +72,19 @@ def grad_des(epsilon = .0001, iterations = 100, dec_epsilon = False, x = train, 
         for i in range(1, iterations):
             w_old = w_new
             w_new = w_old - epsilon / i **2 * logistic_grad_fn(x = train, w = w_old, y = labels[0])
+            if i in display:
+                print("R(w): {}, iterations : {}, epsilon: {}".format(R(w), i, epsilon))
 
     else:
-        for _ in range(iterations):
+        for i in range(iterations):
             w_old = w_new
             w_new = w_old - epsilon * logistic_grad_fn(x = train, w = w_old, y = labels[0])
-    print("iterations: {}, R(w): {}, epsilon: {}".format(iterations, R(w_new), epsilon))
+            if i in display:
+                print("R(w): {}, iterations : {}, epsilon: {}".format(R(w), i, epsilon))
+            # TODO add print code if display
     return w_new
 
-def stochastic_grad_fn(w, x = train, y = labels[0]):
-    # def logistic_grad_fn(w, x = train, y= labels[0]):
-    i = randrange(len(x))
-    ans = ((y[i] - s( dot(x[i], w) )[0]) * x[i].reshape(len(x[i]),1))
-    return ans
-
-def stochastic_grad_des(epsilon = .1, iterations = 1000, dec_epsilon = False):
+def stochastic_grad_des(epsilon = .1, iterations = 1000, dec_epsilon = False, display = []e):
     w_new = np.array([ [1] for i in range(len(train[0]))])
     assert iterations > 0
     if dec_epsilon:
@@ -92,6 +97,7 @@ def stochastic_grad_des(epsilon = .1, iterations = 1000, dec_epsilon = False):
         for _ in range(iterations):
             w_old = w_new
             w_new = w_old - epsilon * stochastic_grad_fn(x = train, w = w_old, y = labels[0])
+            # TODO add print code if display
     return w_new
 
 
@@ -102,10 +108,10 @@ def R(w, x = train, y = labels[0]):
 # def predict(x = train, w = grad_des()):
     # return np.dot(x, w)
 
-iteration_list = [1000, 5000, 10000, 20000, 30000, 50000]
+iteration_list = [1000, 2000, 3000, 4000, 5000,]
 # TODO grep for 'plt' and add a savefig
 
-def plot_risk(epsilon = .0001, dec_epsilon = False, t1 = False, t2 = False, t3 = False, batch = True, show = False):
+def plot_risk(epsilon = .00001, dec_epsilon = False, t1 = False, t2 = False, t3 = False, batch = True, show = False):
     indep = []
     dep = iteration_list
     if batch:
@@ -124,14 +130,17 @@ def plot_risk(epsilon = .0001, dec_epsilon = False, t1 = False, t2 = False, t3 =
 
     for i in iteration_list:
         w = f(epsilon = epsilon, x = x_trans, iterations = i, dec_epsilon = True, y = labels[0])
+        w = f(epsilon = epsilon, x = x_trans, iterations = iteration_list[-1], dec_epsilon = True, y = labels[0] display = iteration_list)
         r = R(w)
-        print("R(w): {}, iterations : {}, epsilon: {}".format(R(w,), iterations, epsilon))
+        print("R(w): {}, iterations : {}, epsilon: {}".format(R(w,), i, epsilon))
         indep.append( R(w) )
     plt.scatter(indep, dep)
     if show:
         plt.show()
 
 
+# TODO interleave 
+# TODO save weights you get from running computations so you can use them on training set.
 
 def main():
     # grad_des(dec_epsilon = True)
