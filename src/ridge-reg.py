@@ -21,10 +21,14 @@ hyperparam_vals = [1e-10, 1.5e-7, 1e-5, 1e-3, 1e-1, 1e0, 1e1, 1e2, 1e3, 1e4]
 housing_data = sio.loadmat('./housing_dataset/housing_data.mat')
 
 x_train    = housing_data['Xtrain']
+
 y_train    = housing_data['Ytrain']
 
 x_validate = housing_data['Xvalidate']
 y_validate = housing_data['Yvalidate']
+
+# x_train = normalize(x_train)
+# x_validate = normalize(x_validate)
 
 # ============= FUNCTIONS =============
 
@@ -32,19 +36,11 @@ y_validate = housing_data['Yvalidate']
 def rss(pred_labels, true_labels):
     errors = pred_labels - true_labels
     err_sq = errors**2
-    return sum(err_sq)
+    return np.sum(err_sq)
 
 def add_bias(vec, bias_term = 1):
     return np.insert(vec, [len(vec[0])], [[bias_term] for i in range(len(vec))], axis = 1)
 
-def center(mat):
-    """
-    Centers each vector in a matrix without rescaling their lengths.
-    """
-    return normalize(mat, with_mean = False)
-
-# [] TODO: Normalize x
-# [] TODO: get RSS of diff vector
 
 # ============= RIDGE REGRESSION =============
 def ridge_regression_model(X = x_train, y = y_train, epsilon = .001):
@@ -70,11 +66,9 @@ def ridge_regression_model(X = x_train, y = y_train, epsilon = .001):
 
     return C
 
-# x = x_train
-# y = y_train
+def predict(x = x_validate, w = ridge_regression_model()):
+    return np.dot(x, w)
 
-x = normalize(x_train, with_mean = False)
-y = normalize(y_train, with_mean = False)
 
 def test_params(data, labels, param_list = hyperparam_vals):
     x = data
@@ -119,6 +113,22 @@ def test_k_fold(param_list = hyperparam_vals, data = x_train, labels = y_train, 
             y_valid = k_fold( data = y_train , fold_num = n, k = folds )[0]
             y_cross = k_fold( data = y_train , fold_num = n, k = folds )[1]
 
-            w = ridge_regression_model()
+            w = ridge_regression_model(epsilon = param)
             y_pred = np.dot(x_cross, w)
             print (w, y_pred)
+
+
+def plot_w(w, show = False):
+    indep = [i for i in range(len(w))]
+    dep = [w[i] for i in range(len(w))]
+    plt.scatter(indep, dep)
+    if show:
+        plt.show()
+
+def main():
+    print (ridge_regression_model().shape)
+    print (ridge_regression_model())
+    print("rss(): {}".format(rss(predict(), y_validate)))
+    plot_w(ridge_regression_model())
+
+main()
