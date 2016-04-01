@@ -8,6 +8,11 @@ import scipy
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.io as sio
+from scipy.special import expit as s
+# from scipy.special import expit
+from random import shuffle
+from random import randint
+from random import randrange
 
 from math import log as ln
 from numpy import dot
@@ -15,7 +20,6 @@ from sklearn import svm
 from sklearn.preprocessing import scale as normalize
 from sklearn.utils import shuffle
 from sklearn.metrics import confusion_matrix
-
 
 # Must be run from top of project
 data = sio.loadmat('./spam_dataset/spam_data.mat')
@@ -27,7 +31,6 @@ labels = data['training_labels']
 test = data['test_data']
 
 # i) Standardize each column to have mean 0 and unit variance.
-
 
 def log_transform_matrix(mat):
     def log_transform_list(lst):
@@ -46,44 +49,93 @@ def binarize_matrix(mat):
 
     return np.array([binarize_list(lst) for lst in mat])
 
-def logistic_grad_fn(w, x = train, y= labels[0]):
-    s = scipy.special.expit
-    # ans = np.sum([(y[i] - s( dot(x[i], w) )) * x[i].reshape(len(x[i]),1) for i in range(len(x[0]))], axis = 0)
-    ans = np.sum([(y[i] - s( dot(x[i], w) )[0]) * x[i].reshape(len(x[i]),1) for i in range(len(x))], axis = 0)
+# TODO fix taking log of values really close to zero by setting to .0000001
+def logistic_grad_fn(w, x = train, y = labels[0]):
+    ans = np.sum([(y[i] - s( dot(x[i], w) [0])) * x[i].reshape(len(x[i]),1)
+                  for i in range(len(x))], axis = 0)
     return ans
 
-# TODO should it be range len x[0] or y[0]
+def grad_des(epsilon = .0001, iterations = 100, dec_epsilon = False, x = train, y = labels[0]):
+    w_new = np.array([ [1] for i in range(len(x[0]))])
+    assert iterations > 0
 
-def grad_des(epsilon = .001, iterations = 1000) :
+    if dec_epsilon:
+        w_old = w_new
+        w_new = w_old - epsilon * logistic_grad_fn(x = train, w = w_old, y = labels[0])
+        for i in range(1, iterations):
+            w_old = w_new
+            w_new = w_old - epsilon / i **2 * logistic_grad_fn(x = train, w = w_old, y = labels[0])
+
+    else:
+        for _ in range(iterations):
+            w_old = w_new
+            w_new = w_old - epsilon * logistic_grad_fn(x = train, w = w_old, y = labels[0])
+    print("iterations: {}, R(w): {}, epsilon: {}".format(iterations, R(w_new), epsilon))
+    return w_new
+
+def stochastic_grad_fn(w, x = train, y = labels[0]):
+    # def logistic_grad_fn(w, x = train, y= labels[0]):
+    i = randrange(len(x))
+    ans = ((y[i] - s( dot(x[i], w) )[0]) * x[i].reshape(len(x[i]),1))
+    return ans
+
+def stochastic_grad_des(epsilon = .1, iterations = 1000, dec_epsilon = False):
     w_new = np.array([ [1] for i in range(len(train[0]))])
     assert iterations > 0
-    for _ in range(iterations):
+    if dec_epsilon:
         w_old = w_new
-        w_new = w_old - epsilon * logistic_grad_fn(train, w_old, labels) # grad_fn(w_old)
+        w_new = w_old - epsilon * stochastic_grad_fn(x = train, w = w_old, y = labels[0])
+        for i in range(1, iterations):
+            w_old = w_new
+            w_new = w_old - epsilon / i **2 * stochastic_grad_fn(x = train, w = w_old, y = labels[0])
+    else:
+        for _ in range(iterations):
+            w_old = w_new
+            w_new = w_old - epsilon * stochastic_grad_fn(x = train, w = w_old, y = labels[0])
     return w_new
 
 
-# def test_grad_desc(x=train, epsilon = .1, iteration=1000, y=labels):
-#
-# def stochastic_grad_des(epsilon = .1, iterations = 1000) : # TODO grad fn
-    # Choose an initial vector of parameters w and learning rate \eta.
-    # Repeat until an approximate minimum is obtained:
-    # Randomly shuffle examples in the training set.
-        # For \! i in 1..n:
-            # \! w = w - epsilon * grad Q_i(w).
+# TODO find out how I'm taking the log of 0 or something near it
+def R(w, x = train, y = labels[0]):
+    return -np.sum( y[i] * ln( np.maximum(.000000001,s(dot(x[i], w)[0]))) + (1 - y[i]) * ln( np.maximum(.000000001, 1 - s(dot(x[i],w)[0]))) for i in range(len(x)))
+
+# def predict(x = train, w = grad_des()):
+    # return np.dot(x, w)
+
+iteration_list = [1000, 5000, 10000, 20000, 30000, 50000]
+# TODO grep for 'plt' and add a savefig
+
+def plot_risk(epsilon = .0001, dec_epsilon = False, t1 = False, t2 = False, t3 = False, batch = True, show = False):
+    indep = []
+    dep = iteration_list
+    if batch:
+        f = grad_des
+    else:
+        f = stochastic_grad_des
+    if t1:
+        x_trans = normalize(train)
+    elif t2:
+        x_trans = log_transform_matrix(train)
+    elif t3:
+        x_trans = binarize_matrix(train)
+    else:
+        x_trans = train
 
 
-# def plot_grad_desc(iterations, risk):
-#     """
-#     generate a single point to be plotted
-#     """
+    for i in iteration_list:
+        w = f(epsilon = epsilon, x = x_trans, iterations = i, dec_epsilon = True, y = labels[0])
+        r = R(w)
+        print("R(w): {}, iterations : {}, epsilon: {}".format(R(w,), iterations, epsilon))
+        indep.append( R(w) )
+    plt.scatter(indep, dep)
+    if show:
+        plt.show()
 
-# def decreasing_learning_rate(x):
 
-def R(w, x= train, y = labels[0]):
-    s = scipy.special.expit
-    print ([ln(1 - s( dot(x[i],w)[0])) for i in range(len(x))])
-    return ([(1- y[i]) * ln(1 - s( dot(x[i],w)[0])) for i in range(len(x))])
 
-    # return (-sum([ (y[i] * ln(s(dot(x[i],w)[0]))) + ( (1 - y[i]) * ln(1 - s(dot(x[i], w)[0])) )
-                   # for i in range(len(x)) ]))
+def main():
+    # grad_des(dec_epsilon = True)
+    # stochastic_grad_des(dec_epsilon = True)
+    plot_risk(show=True)
+
+main()
