@@ -43,7 +43,7 @@ def add_bias(vec, bias_term = 1):
 
 
 # ============= RIDGE REGRESSION =============
-def ridge_regression_model(X = x_train, y = y_train, epsilon = .001):
+def ridge_regression_model(X = x_train, y = y_train, epsilon = 1e-4):
     """
     Returns a set of weights for a ridge regression model.
 
@@ -128,7 +128,7 @@ def plot_w(w, show = False):
 def main():
     print (ridge_regression_model().shape)
     print (ridge_regression_model())
-    print("rss(): {}".format(rss(predict(), y_validate)))
-    plot_w(ridge_regression_model())
+    print("rss(): {:}".format(rss(predict(), y_validate)))
+    plot_w(ridge_regression_model(), show=True)
 
 main()

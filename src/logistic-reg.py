@@ -9,17 +9,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.io as sio
 from scipy.special import expit as s
-# from scipy.special import expit
 from random import shuffle
 from random import randint
 from random import randrange
 
-from math import log as ln
+from numpy import log as ln
 from numpy import dot
 from sklearn import svm
 from sklearn.preprocessing import scale as normalize
 from sklearn.utils import shuffle
-from sklearn.metrics import confusion_matrix
 
 # Must be run from top of project
 data = sio.loadmat('./spam_dataset/spam_data.mat')
@@ -55,21 +53,13 @@ def logistic_grad_fn(w, x = train, y = labels[0]):
                   for i in range(len(x))], axis = 0)
     return ans
 
-class GradDesc(object):
-
-    """Docstring for . """
-
-    def __init__(self):
-        """TODO: to be defined1. """
-        
-
 def stochastic_grad_fn(w, x = train, y = labels[0]):
     # def logistic_grad_fn(w, x = train, y= labels[0]):
     i = randrange(len(x))
     ans = ((y[i] - s( dot(x[i], w) )[0]) * x[i].reshape(len(x[i]),1))
     return ans
 
-def grad_des(epsilon = 1e-3, iterations = 100, dec_epsilon = False, x = train, y = labels[0], display = []):
+def grad_des(epsilon = 1e-4, iterations = 100, dec_epsilon = False, x = train, y = labels[0], display = []):
     w_new = np.array([ [1] for i in range(len(x[0]))])
     assert iterations > 0
 
@@ -80,19 +70,18 @@ def grad_des(epsilon = 1e-3, iterations = 100, dec_epsilon = False, x = train, y
             w_old = w_new
             w_new = w_old - epsilon / i **2 * logistic_grad_fn(x = train, w = w_old, y = labels[0])
             if i in display:
-                print("R(w): {}, iterations : {}, epsilon: {}".format(R(w), i, epsilon))
-
+                print("R(w): {}, iterations : {}, epsilon: {:e}".format(R(w_new), i, epsilon))
     else:
         for i in range(iterations):
             w_old = w_new
             w_new = w_old - epsilon * logistic_grad_fn(x = train, w = w_old, y = labels[0])
             if i in display:
-                print("R(w): {}, iterations : {}, epsilon: {}".format(R(w), i, epsilon))
+                print("R(w): {}, iterations : {}, epsilon: {:e}".format(R(w), i, epsilon))
             # TODO add print code if display
     return w_new
 
-def stochastic_grad_des(epsilon = 1e-3, iterations = 1000, dec_epsilon = False, display = []e):
-    w_new = np.array([ [1] for i in range(len(train[0]))])
+def stochastic_grad_des(epsilon = 1e-5, iterations = 100, dec_epsilon = False, display = []):
+    w_new = np.array([[1] for i in range(len(train[0]))])
     assert iterations > 0
     if dec_epsilon:
         w_old = w_new
@@ -134,13 +123,48 @@ def plot_risk(epsilon = 1e-3, dec_epsilon = False, t1 = False, t2 = False, t3 = 
     else:
         x_trans = train
 
-    w = f(epsilon = epsilon, x = x_trans, iterations = iteration_list[-1], dec_epsilon = True, y = labels[0] display = iteration_list)
+    w = f(epsilon = epsilon, x = x_trans, iterations = iteration_list[-1], dec_epsilon = True, y = labels[0], display = iteration_list)
     indep.append( R(w) )
     plt.scatter(indep, dep)
     if show:
         plt.show()
 
 
+def safelog(x):
+    return np.log(max(x, 1e-8))
+
+# def new risk
+# def new grad
+def k(x, z, rho = 1, d = 2):
+    return ( dot(x.T, z) + rho)**d
+
+def create_kernel_matrix(x = train):
+    mat = np.eye(len(x))
+    for i in range(len(x)):
+        for j in range(len(x)):
+            mat[i][j] = k(x[i], x[j])
+    return mat
+
+K = create_kernel_matrix()
+
+def kernel_gradient_descent(x, y, epsilon=1e-5, iterations = 1000, lamb = 1e-3):
+    # 1d array
+    a = np.array([ [1] for i in range(len(x))])
+
+    for m in range(iterations):
+        i = randrange(len(y))
+        print("iteration: {}, inital a: {}".format(m, a))
+        a[i] = a[i] - (epsilon * lamb * a[i]) + epsilon * (y[i] - s(dot(K, a)[i]))
+        print("iteration: {}, new a: {}".format(m, a))
+        for j in range(len(y)):
+            if j != i:
+                a[j] = a[j] - epsilon * lamb * a[j]
+        arr = [y[i] * safelog(s(a[j] * K[i,j])) + (1 - y[i]) * safelog(1 - s(a[j] * K[i,j])) for j in range(len(x))]
+        if m % 100 == 0:
+            risk = -np.sum(arr)
+            print("risk: {}, m: {}".format(risk,m))
+    print("a: {}".format(a))
+    return a
 # TODO find way to add R(w) and iteration number to list to plot
 # Shuffle y in stochastic gradient descent to make it work? (do i need this?)
 # TODO save weights you get from running computations so you can use them on training set.
@@ -148,6 +172,8 @@ def plot_risk(epsilon = 1e-3, dec_epsilon = False, t1 = False, t2 = False, t3 = 
 def main():
     # grad_des(dec_epsilon = True)
     # stochastic_grad_des(dec_epsilon = True)
-    plot_risk(show=True)
+    # plot_risk(show=True)
+    kernel_gradient_descent(x=train,y=labels[0], epsilon=1e-5)
 
 main()
+
